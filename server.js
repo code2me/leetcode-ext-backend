@@ -9,7 +9,7 @@ const port = 3000;
 const leetcode = new LeetCode();
 
 app.use(express.json());
-app.use(morgan('combined'));
+app.use(morgan('tiny'));
 app.use(cors());
 
 const recentSubmissionsMap = new Map();
