@@ -26,10 +26,18 @@ app.post("/username", async (req, res) => {
         recentSubmissionsMap.set(username, data.recentSubmissionList);
         const jsQuestions = await fetchJsonObject();
 
-        const acceptedQuestions = data.recentSubmissionList.filter(submission =>
-            jsQuestions[0].questions.includes(submission.title) &&
-            submission.statusDisplay === 'Accepted'
-        );
+        // Create a Map to store unique accepted question titles
+        const acceptedQuestionsMap = new Map();
+
+        data.recentSubmissionList.forEach(submission => {
+            if (jsQuestions[0].questions.includes(submission.title) &&
+                submission.statusDisplay === 'Accepted') {
+                acceptedQuestionsMap.set(submission.title, submission);
+            }
+        });
+
+        // Convert the Map back to an array
+        const acceptedQuestions = Array.from(acceptedQuestionsMap.values());
 
         const count = acceptedQuestions.length;
         res.status(200).json({ message: "Username submitted successfully", count, acceptedQuestions });
@@ -39,16 +47,6 @@ app.post("/username", async (req, res) => {
     }
 });
 
-app.get('/count/:username', async (req, res) => {
-    const username = req.params.username;
-    const recentSubmissions = recentSubmissionsMap.get(username) || [];
-    const jsQuestions = await fetchJsonObject();
-
-    const count = recentSubmissions.filter(submission =>
-        submission.statusDisplay === 'Accepted' && jsQuestions[0].questions.includes(submission.title)
-    ).length;
-    res.status(200).send({ count });
-});
 
 
 app.get('/jsquestions', async (req, res) => {
@@ -104,3 +102,14 @@ const fetchJsonObject = async () => {
         console.error('Error fetching JSON object:', error);
     }
 };
+
+// app.get('/count/:username', async (req, res) => {
+//     const username = req.params.username;
+//     const recentSubmissions = recentSubmissionsMap.get(username) || [];
+//     const jsQuestions = await fetchJsonObject();
+
+//     const count = recentSubmissions.filter(submission =>
+//         submission.statusDisplay === 'Accepted' && jsQuestions[0].questions.includes(submission.title)
+//     ).length;
+//     res.status(200).send({ count });
+// });
